@@ -1,25 +1,17 @@
+// import dependencies
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const app = express();
-require("dotenv-flow").config();    // .env file
+// import product routes
+const productRoutes = require("./routes/product.js");
+// .env file
+require("dotenv-flow").config();
 
 
-// function definitions (I don't plan to get into anonymous functions in JS)
-function a(request, response) {
+// parse request of Content-Type JSON
+app.use(bodyParser.json());
 
-
-    response
-    .status(200)
-    .send(
-        {
-            message: "Welcome to the MEN RESTful API"
-        }
-    )
-}
-
-// upcoming: routes (CRUD, aka POST/GET/PATCH/DELETE)
-app.get("/api/welcome2", a);
 
 mongoose.set("strictQuery", true);
 mongoose.connect(
@@ -32,6 +24,15 @@ mongoose.connect(
     error => console.log("Error connecting to MongoDB: " + error)
 );
 //mongoose.connection.once("open", () => console.log("Successfully connected to MongoDB"));
+
+
+// welcome route (the "Hello, world!" of this set of exercises)
+app.get("/api/welcome", (request, response) => {
+    response.status(200).send( { message: "Welcome to the MEN RESTful API" } );
+});
+
+// CRUD routes (aka POST/GET/PUT *or* PATCH/DELETE)
+app.use("/api/products", productRoutes);
 
 
 const PORT = process.env.PORT || 4000;
