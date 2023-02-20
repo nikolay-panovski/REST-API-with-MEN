@@ -3,8 +3,11 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const app = express();
-// import product routes
+
+// import routes (reference with or without .js does not matter)
 const productRoutes = require("./routes/product.js");
+const authRoutes = require("./routes/auth.js");
+
 // .env file
 require("dotenv-flow").config();
 
@@ -33,6 +36,7 @@ app.get("/api/welcome", (request, response) => {
 
 // CRUD routes (aka POST/GET/PUT *or* PATCH/DELETE)
 app.use("/api/products", productRoutes);
+app.use("/api/user", authRoutes);
 
 
 const PORT = process.env.PORT || 4000;

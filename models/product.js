@@ -23,6 +23,8 @@ let productSchema = new mongoose.Schema(
     }
 
 
+    // TODO: Add the provided pre() hook code for __v versioning!
+
     // TODO: define my own "product" type to practice on scheming/creating for this assignment.
     // (Twitch streams? or random videos? or just images?)
     // TODO: write a Schema for it!
