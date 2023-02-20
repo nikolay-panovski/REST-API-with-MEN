@@ -45,9 +45,39 @@ router.post("/", (request, response) => {
     // (and from Mongoose documentation).
 // Read specific existing product - GET
 
-// Update specific existing product - POST (notice: not PATCH here)
+
+// Update specific existing product - PUT (notice: not PATCH here)
+router.put("/:id", (request, response) => {
+    const id = request.params.id;
+
+    // ~~update intricacies (POST vs PUT vs PATCH stuff) safeguarded by being forced to a Mongoose method, lame...
+    product.findByIdAndUpdate(id, request.body) // by default, if a document is returned, it will be from BEFORE the update.
+        .then(data => 
+            {
+                if (!data)    // product not found on MongoDB - possibly bad ID
+                {
+                    response.status(404).send( { message: "Cannot update Product with ID: " + id } );
+                }
+                else response.status(200).send( { message: "Product successfully updated." } );
+            })
+        .catch(error => { response.status(500).send( { message: error.message } ); } );
+});
 
 // Delete specific existing product - DELETE
+router.delete("/:id", (request, response) => {
+    const id = request.params.id;
+
+    product.findByIdAndDelete(id)
+        .then(data => 
+            {
+                if (!data)    // product not found on MongoDB - possibly bad ID
+                {
+                    response.status(404).send( { message: "Cannot delete Product with ID: " + id } );
+                }
+                else response.status(200).send( { message: "Product successfully deleted." } );
+            })
+        .catch(error => { response.status(500).send( { message: error.message } ); } );
+});
 
 
 module.exports = router;
