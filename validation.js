@@ -1,4 +1,5 @@
 const joi = require("joi");
+const jwt = require("jsonwebtoken");
 
 // validate registration
 function registerValidation(data) {
@@ -28,6 +29,20 @@ function loginValidation(data) {
 
 
 // logic to verify our token (JSON Web Tokens JWT)
+function verifyToken(request, response, nextFunc) {
+    const token = request.header("auth-token");
+    if (!token) return response.status(401).json( { error: "Access Denied" } );
+
+    try {
+        const verified = jwt.verify(token, process.env.TOKEN_SECRET);
+        
+        request.user = verified;
+        nextFunc();
+    }
+    catch (error) {
+        response.status(400).json( { error: "Token is not valid" } );
+    }
+}
 
 
-module.exports = { registerValidation, loginValidation };
+module.exports = { registerValidation, loginValidation, verifyToken };

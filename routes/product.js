@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const product = require("../models/product.js");
+const { verifyToken } = require("../validation.js");
 
 
 function returnTailoredObject(inputArray) {
@@ -24,7 +25,9 @@ function returnTailoredObject(inputArray) {
 
 // Create new specific product(s) - POST
 // we already have the general URL in server.js app.use("/api/products"), and we are not appending subdirs to it -> only "/" here
-router.post("/", (request, response) => {
+// QUESTION: How does verifyToken obtain the other function listed here after it to pass it as its "next"
+// (in my case: "nextFunc") function?
+router.post("/", verifyToken, (request, response) => {
     // Take request body and turn it into data to add to the database:
     data = request.body;
     // Run the data through Mongoose schema and constructors (see const product),
@@ -59,6 +62,7 @@ router.get("/", (request, response) => {
 /**/
 
 // !! Same as above but we modify the data before sending it back to the GET - see returnTailoredObject()
+// We CAN also enforce JWT validation on Read routes - if even the data that can be *read* is too sensitive.
 router.get("/", (request, response) => {
     product.find()
         .then(obtainedData => { response.status(200).send(returnTailoredObject(obtainedData)); } )
@@ -130,7 +134,7 @@ router.get("/price/:operator/:price", (request, response) => {
 
 
 // Update specific existing product - PUT (notice: not PATCH here)
-router.put("/:id", (request, response) => {
+router.put("/:id", verifyToken, (request, response) => {
     const id = request.params.id;
 
     // ~~update intricacies (POST vs PUT vs PATCH stuff) safeguarded by being forced to a Mongoose method, lame...
@@ -147,7 +151,7 @@ router.put("/:id", (request, response) => {
 });
 
 // Delete specific existing product - DELETE
-router.delete("/:id", (request, response) => {
+router.delete("/:id", verifyToken, (request, response) => {
     const id = request.params.id;
 
     product.findByIdAndDelete(id)
