@@ -2,6 +2,7 @@ const router = require("express").Router();
 const user = require("../models/user");
 const { registerValidation, loginValidation } = require("../validation.js");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 
 // Registration - POST
@@ -61,6 +62,27 @@ router.post("/login", async (request, response) => {
         // More serious issue: Never tell a user their email OR their password is wrong, always do so collectively.
         return response.status(400).json( { error: "Wrong password!" } );
     }
+
+
+    const token = jwt.sign(
+        // payload: 
+        {
+            name: userEntry.name,
+            id: userEntry._id
+        },
+        // TOKEN_SECRET:
+        process.env.TOKEN_SECRET,
+        // expiration time (part of an object Options)
+        { expiresIn: process.env.JWT_EXPIRES_IN }
+    )
+
+    // Attach auth-token to response header.
+    // Mind that this is on the server side, AKA this is the token being sent back to the client for use until the expiry time.
+    // More information from JWT basics (used to ensure the user is the original authenticated one, not for general security).
+    response.header("auth-token", token).json({
+        error: null,
+        data: { token }
+    })
 });
 
 // QUESTION: any other way to export files to other files than module.exports?
