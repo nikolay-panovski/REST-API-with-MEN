@@ -2,10 +2,27 @@ const router = require("express").Router();
 const product = require("../models/product.js");
 
 
-// CRUD operations:
+function returnTailoredObject(inputArray) {
 
-// Create new specific product - POST
+    let outputArray = inputArray.map(element => (
+        {
+            id: element._id,
+            name: element.name,
+            price: element.price,
 
+            // HATEOAS for this resource - read up your materials for this week:
+            // (hardcoded string is a bad practice)
+            uri: "/api/products/" + element._id
+        }
+    ));
+
+    return outputArray;
+}
+
+
+
+
+// Create new specific product(s) - POST
 // we already have the general URL in server.js app.use("/api/products"), and we are not appending subdirs to it -> only "/" here
 router.post("/", (request, response) => {
     // Take request body and turn it into data to add to the database:
