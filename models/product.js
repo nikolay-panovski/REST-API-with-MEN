@@ -14,9 +14,10 @@ let productSchema = new mongoose.Schema(
     //   inStock: Boolean }
 
     // a JSON Schema looks much like a JSON.
+    // "required" is a built-in validator in Mongoose: https://mongoosejs.com/docs/validation.html#built-in-validators
     {
-        name: {type: String},                           // NB! Mongoose seems to not require type to be in " ".
-        description: {type: String, require: false},    // But default JSON Schemas seem to have {"type": "String" (or other) }.
+        name: {type: String},                            // NOTE: Mongoose seems to not require type to be in " ".
+        description: {type: String, required: false},    // But default JSON Schemas seem to have {"type": "String" (or other) }.
         price: {type: Number},
         inStock: {type: Boolean}
     }
