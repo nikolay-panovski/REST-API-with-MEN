@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const user = require("../models/user");
-const { registerValidation } = require("../validation.js");
+const { registerValidation, loginValidation } = require("../validation.js");
 const bcrypt = require("bcrypt");
 
 
@@ -45,7 +45,22 @@ router.post("/register", async (request, response) => {
 });
 
 router.post("/login", async (request, response) => {
+    const { error } = loginValidation(request.body);
+    if (error) {
+        return response.status(400).json( { error: error.details[0].message } );
+    }
 
+    const userEntry = await user.findOne( { email: request.body.email } );
+    if (!userEntry) {
+        return response.status(400).json( { error: "Email does not exist in the database!" } );
+    }
+
+    // ~~we don't even have to store/retrieve the salt manually, smh
+    const isPasswordValid = await bcrypt.compare(request.body.password, userEntry.password);
+    if (!isPasswordValid) {
+        // More serious issue: Never tell a user their email OR their password is wrong, always do so collectively.
+        return response.status(400).json( { error: "Wrong password!" } );
+    }
 });
 
 // QUESTION: any other way to export files to other files than module.exports?
