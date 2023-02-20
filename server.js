@@ -43,5 +43,3 @@ function testPrintPort() {
 
 
 app.listen(PORT, testPrintPort);
-
-module.exports = app;
