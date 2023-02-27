@@ -79,10 +79,13 @@ router.post("/login", async (request, response) => {
     // Attach auth-token to response header.
     // Mind that this is on the server side, AKA this is the token being sent back to the client for use until the expiry time.
     // More information from JWT basics (used to ensure the user is the original authenticated one, not for general security).
+
     response.header("auth-token", token).json({
         error: null,
         data: { token }
     })
+    // CAN DO: On a front-end app that works together with this, save/cache the token (also matters how often it expires).
+    // This comes with the implication that the front-end app is tied to the backend/server/database, and NOT the user, if I understand correctly.
 });
 
 // QUESTION: any other way to export files to other files than module.exports?
