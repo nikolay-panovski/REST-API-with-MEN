@@ -1,5 +1,7 @@
 # NOTE: Swagger also works with JSON!
 
+# TODO: params are mandatory for Swagger to have meaningful tests that require them (GET tests, in this case)
+
 openapi: 3.0.0
 info:
   title: REST API with MEN
@@ -7,7 +9,7 @@ info:
   # https://stackoverflow.com/a/21699210
   description: "This is a student API made for a course.
     Contains the basics - CRUD operations for minimal registered and guest users.\n
-    Content domain: Products (TODO: replace with something else)"
+    Content domain: Tasks (for a project management app. Continued in another course.)"
   version: 1.0.0-tutorial
 servers:
   - url: http://localhost:4000/api/
@@ -16,8 +18,10 @@ servers:
 tags:
   - name: GET Routes
     description: Routes that return information from the database. Not protected.
-  - name: POST Routes
-    description: Routes that add to the database. Create a user and authenticate to use these.
+  - name: CRUD Routes
+    description: Routes that modify the database. Create a user and authenticate to use these.
+  - name: User Routes
+    description: Routes related to users. Register and log in to be able to modify the database!
     # And in reality, this ONLY pairs names with descriptions. We may use tags not "defined" here just fine.
 
 components:
@@ -28,7 +32,7 @@ components:
       name: auth-token
 
   schemas:
-    Product:
+    Task:
       type: object
       properties:
         id:
@@ -37,10 +41,16 @@ components:
           type: string
         description:
           type: string
-        price:
+        state_visibility:
+          type: string
+        state_completion:
+          type: string
+        created_at:
+          type: date
+        time_estimated:
           type: number
-        inStock:
-          type: boolean
+        time_registered:
+          type: number
     
     User:
       type: object
@@ -61,7 +71,7 @@ paths:
       summary: Register a new User
       description: Register a new User in the database
       tags:
-        - POST Routes
+        - User Routes
       requestBody:
         required: true
         content:
@@ -87,7 +97,7 @@ paths:
       summary: Login a User
       description: Login a User in order to get JWT token (auth-token)
       tags:
-        - POST Routes
+        - User Routes
       requestBody:
         required: true
         content:
@@ -114,81 +124,144 @@ paths:
                     type: string
 
 
-  /products:
+  /tasks:
     get:
       tags:
         - GET Routes
-      summary: Retrieves a list of Products
-      description: Retrieves a list of products as JSON objects.
+      summary: Retrieves a list of Tasks
+      description: Retrieves a list of tasks as JSON objects.
       responses:
         200:
-          description: A list of product JSON objects in an array.
+          description: A list of task JSON objects in an array.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Product"  # the ref is to the "components" object defined within THIS file
+                  $ref: "#/components/schemas/Task"  # the ref is to the "components" object defined within THIS file
+        500:
+        # 5XX:
+          description: Unexpected server error.
+
+  /tasks/id/{id}:
+    get:
+      tags:
+        - GET Routes
+      summary: Retrieves a Task by ID
+      description: Retrieves a Task as a JSON object.
+      responses:
+        200:
+          description: A Task JSON object.
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Task"  # the ref is to the "components" object defined within THIS file
+        500:
+        # 5XX:
+          description: Unexpected server error.
+
+  /tasks/{name}:
+    get:
+      tags:
+        - GET Routes
+      summary: Retrieves a Task by Name
+      description: Retrieves a Task as a JSON object.
+      responses:
+        200:
+          description: A Task JSON object.
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Task"  # the ref is to the "components" object defined within THIS file
+        500:
+        # 5XX:
+          description: Unexpected server error.
+
+  /tasks/visibility/{state_visibility}:
+    get:
+      tags:
+        - GET Routes
+        # de facto:
+        # parameters:
+        #   - in: <etc.> (see below)
+      summary: Retrieves a list of Tasks by their Visibility
+      description: Retrieves a list of tasks as JSON objects.
+      responses:
+        200:
+          description: A list of task JSON objects in an array.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"  # the ref is to the "components" object defined within THIS file
+        500:
+        # 5XX:
+          description: Unexpected server error.
+
+  /tasks/completion/{state_completion}:
+    get:
+      tags:
+        - GET Routes
+        # de facto:
+        # parameters:
+        #   - in: <etc.> (see below)
+      summary: Retrieves a list of Tasks by their Completion
+      description: Retrieves a list of tasks as JSON objects.
+      responses:
+        200:
+          description: A list of task JSON objects in an array.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"  # the ref is to the "components" object defined within THIS file
         500:
         # 5XX:
           description: Unexpected server error.
     
+  /tasks/create:
     post:
-      summary: Create a new Product
-      description: Create a new Product
+      summary: Create a new Task
+      description: Create a new Task
       security:
         - ApiKeyAuth: []      
       tags:
-        - POST Routes
+        - CRUD Routes
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Product"
+              $ref: "#/components/schemas/Task"
 
       responses:
         201:
-          description: Product created succesfully
+          description: Task created succesfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Product"
+                $ref: "#/components/schemas/Task"
         401:
-          description: "Unauthorized user tried to create a Product without passing a token.
+          description: "Unauthorized user tried to create a Task without passing a token.
             (Pass a response JWT token with this request.)"
         400:
-          description: "Unauthorized user tried to create a Product with an invalid token.
+          description: "Unauthorized user tried to create a Task with an invalid token.
             (Try again - either wrongly copypasted from the response, or a bad malicious attempt.)"
   
-  /products/{id}:
-    get:
-      tags:
-        - GET Routes
-      summary: Specific Product
-      description: Retrieves a specific Product based on it id.
-      parameters:
-        - in: path
-          name: id
-          required: true
-          description: MongoDB id
-          schema:
-            type: string
-      responses:
-        200:
-          description: A Product in the format of a JSON object.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Product"
-   
-    put:
-      summary: Updates a specific Product
-      description: Updates a specific Product based on it id
+  /tasks/edit/{id}:
+    patch:
+      summary: Updates the Name and Description of a specific Task
+      description: Updates a specific Task based on its id
       security:
-        - ApiKeyAuth: []            
+        - ApiKeyAuth: [] 
+      tags:
+        - CRUD Routes           
       parameters:
         - in: path
           name: id
@@ -201,21 +274,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Product"
+              $ref: "#/components/schemas/Task"
 
       responses:
         201:
-          description: Product updated succesfully
+          description: Task updated succesfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Product"
+                $ref: "#/components/schemas/Task"
 
+  /tasks/delete/{id}:
     delete:
-      summary: Deletes a specific Product
-      description: Deletes a specific Product based on it id
+      summary: Deletes a specific Task
+      description: Deletes a specific Task based on its id
       security:
-        - ApiKeyAuth: []            
+        - ApiKeyAuth: []   
+      tags:
+        - CRUD Routes         
       parameters:
         - in: path
           name: id
@@ -226,8 +302,8 @@ paths:
 
       responses:
         201:
-          description: Product deleted succesfully
+          description: Task deleted succesfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Product"
+                $ref: "#/components/schemas/Task"
