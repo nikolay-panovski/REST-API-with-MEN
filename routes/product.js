@@ -3,10 +3,11 @@ const product = require("../models/product.js");
 const { verifyToken } = require("../validation.js");
 
 
-function returnTailoredObject(inputArray) {
+function ArrayToTailoredObject(inputArray) {
 
     let outputArray = inputArray.map(element => (
         {
+            // replaceable by "return ObjectToTailoredObject(element)" (are there any side effects?)
             id: element._id,
             name: element.name,
             price: element.price,
@@ -20,7 +21,15 @@ function returnTailoredObject(inputArray) {
     return outputArray;
 }
 
+function ObjectToTailoredObject(inputObject) {
+    return {
+        id: inputObject._id,
+        name: inputObject.name,
+        price: inputObject.price,
 
+        uri: "/api/products/" + inputObject._id
+    }
+}
 
 
 // Create new specific product(s) - POST
@@ -97,7 +106,7 @@ router.get("/:id", (request, response) => {
     // !! Does NOT correspond to Query > Query Parameters > anything, really. What are the works behind the magic of "/:id" ???
 
     product.findById(request.params.id)     // equivalent (almost) to findOne({ _id: id }) for MongoDB
-        .then(obtainedData => { response.status(200).send(obtainedData); } )
+        .then(obtainedData => { response.status(200).send(ObjectToTailoredObject(obtainedData)); } )
         .catch(error => { response.status(500).send( { message: error.message } ); } );
 });
 
@@ -128,7 +137,7 @@ router.get("/price/:operator/:price", (request, response) => {
     }
 
     product.find( { price: filterExpression } )
-        .then( (matchingData) => { response.status(200).send(returnTailoredObject(matchingData)) } )
+        .then( (matchingData) => { response.status(200).send(ArrayToTailoredObject(matchingData)) } )
         .catch( (error) => response.status(500).send( { message: error.message } ) );
 });
 
