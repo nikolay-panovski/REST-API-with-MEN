@@ -70,14 +70,54 @@ router.get("/", (request, response) => {
 });
 /**/
 
-// !! Same as above but we modify the data before sending it back to the GET - see returnTailoredObject()
+// !! Same as above but we modify the data before sending it back to the GET - see Array/ObjectToTailoredObject()
 // We CAN also enforce JWT validation on Read routes - if even the data that can be *read* is too sensitive.
 router.get("/", (request, response) => {
     product.find()
-        .then(obtainedData => { response.status(200).send(returnTailoredObject(obtainedData)); } )
-        .catch(error => { response.status(500).send( {message: error.message } ); } );
+        //.then(obtainedData => { response.status(200).send(ArrayToTailoredObject(obtainedData)); } )
+        /**/
+        .then((obtainedData) => {
+            let responseArray = new Array();
+
+            for (anObject of obtainedData) {
+                responseArray.push(ObjectToTailoredObject(anObject));
+            }
+
+            response.status(200).send(responseArray);
+        }
+        /**/
+        ).catch(error => { response.status(500).send( {message: error.message } ); } );
 });
 
+
+router.get("/random", (request, response) => {
+    // get a random product
+    product.countDocuments()
+        .then(count => {
+            // get a random number between 0 and count
+            // * count is a problem if we hit 1 on Math.random() (but Math.random's range is said to be [0; 1) );
+            // * (count - 1) is a problem if we have 0 documents
+            let random = Math.round(Math.random() * count );
+
+            // Skip method (fetch) one document at "random" offset
+            // (we still need to query all documents)
+            product.findOne().skip(random)
+                .then(data => { response.status(200).send(ObjectToTailoredObject(data)) } )
+                .catch(error => { response.status(500).send( { message: "Wow, you couldn't fetch a random document" } ) } );
+        });
+});
+
+// Read all documents based on variable field (see Product Schema) and value
+// Copied over from https://github.com/sspangsberg/MEN_RESTAPI_EASV_S23/blob/main/routes/product.js
+router.get("/:field/:value", (request, response) => {   
+    // [] brackets are required, we are not certain why but JS seems to consider request.params.field an invalid identifier:
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Grammar_and_types#object_literals
+    product.find({ [request.params.field]: { $regex: request.params.value, $options:'i'/*case-insensitive*/ } })
+    .then (data => { response.send(data) })  
+    .catch (err => { 
+        response.status(500).send( { message: err.message } )
+    })
+});
 
 
 // Read all products IN STOCK - GET
