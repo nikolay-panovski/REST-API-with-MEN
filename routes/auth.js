@@ -8,7 +8,7 @@ const jwt = require("jsonwebtoken");
 // Registration - POST
 router.post("/register", async (request, response) => {
     // Validate the user input (via library: joi):
-    // TODO: What if this was indeed only contained in this file after all? + What if no joi package?
+    // QUESTION: What if this was indeed only contained in this file after all? + What if no joi package?
 
     // import only "error" param from the function return value (it IS name-dependent)
     const { error } = registerValidation(request.body);
@@ -17,18 +17,15 @@ router.post("/register", async (request, response) => {
     }
 
 
-    // - Email: is it already registered?
     const emailExists = await user.findOne( { email: request.body.email } );
     if (emailExists) {
         return response.status(400).json( { error: "Email already exists!" } );
     }
 
-    // - Password: hash (via another library: bcrypt)
     const salt = await bcrypt.genSalt();
     const password = await bcrypt.hash(request.body.password, salt);
     // OR: const password = await bcrypt.hash(request.body.password, 10); where 10 = # rounds to generate salt (see genSalt())
 
-    // Finally: Create a new user object and save it in database
     const userObject = new user({
         username: request.body.username,
         email: request.body.email,
@@ -56,34 +53,28 @@ router.post("/login", async (request, response) => {
         return response.status(400).json( { error: "Email does not exist in the database!" } );
     }
 
-    // ~~we don't even have to store/retrieve the salt manually, smh
     const isPasswordValid = await bcrypt.compare(request.body.password, userEntry.password);
     if (!isPasswordValid) {
-        // More serious issue: Never tell a user their email OR their password is wrong, always do so collectively.
-        return response.status(400).json( { error: "Wrong password!" } );
+        return response.status(400).json( { error: "Wrong email or password!" } );
     }
 
 
     const token = jwt.sign(
-        // payload: 
-        {
+        {                                           // payload
             name: userEntry.name,
             id: userEntry._id
         },
-        // TOKEN_SECRET:
-        process.env.TOKEN_SECRET,
-        // expiration time (part of an object Options)
-        { expiresIn: process.env.JWT_EXPIRES_IN }
-    )
+        process.env.TOKEN_SECRET,                   // TOKEN_SECRET
+        {                                           // object Options (here: expiration time only)
+            expiresIn: process.env.JWT_EXPIRES_IN
+        }
+    );
 
-    // Attach auth-token to response header.
-    // Mind that this is on the server side, AKA this is the token being sent back to the client for use until the expiry time.
-    // More information from JWT basics (used to ensure the user is the original authenticated one, not for general security).
-
+    
     response.header("auth-token", token).json({
         error: null,
         data: { token }
-    })
+    });
     // CAN DO: On a front-end app that works together with this, save/cache the token (also matters how often it expires).
     // This comes with the implication that the front-end app is tied to the backend/server/database, and NOT the user, if I understand correctly.
 });

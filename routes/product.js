@@ -1,24 +1,18 @@
 const router = require("express").Router();
 const product = require("../models/product.js");
-const { verifyToken } = require("../validation.js");
+const { verifyJWTToken } = require("../validation.js");
 
 
 function ArrayToTailoredObject(inputArray) {
-
-    let outputArray = inputArray.map(element => (
+    return inputArray.map(element => (
         {
             // replaceable by "return ObjectToTailoredObject(element)" (are there any side effects?)
             id: element._id,
             name: element.name,
             price: element.price,
-
-            // HATEOAS for this resource - read up your materials for this week:
-            // (hardcoded string is a bad practice)
-            uri: "/api/products/" + element._id
+            //uri: "/api/products/" + element._id
         }
     ));
-
-    return outputArray;
 }
 
 function ObjectToTailoredObject(inputObject) {
@@ -26,17 +20,18 @@ function ObjectToTailoredObject(inputObject) {
         id: inputObject._id,
         name: inputObject.name,
         price: inputObject.price,
-
-        uri: "/api/products/" + inputObject._id
+        
+        // HATEOAS for this resource, I might or might not want that for some property later
+        //uri: "/api/products/" + inputObject._id
     }
 }
 
 
-// Create new specific product(s) - POST
 // we already have the general URL in server.js app.use("/api/products"), and we are not appending subdirs to it -> only "/" here
-// QUESTION: How does verifyToken obtain the other function listed here after it to pass it as its "next"
-// (in my case: "nextFunc") function?
-router.post("/", verifyToken, (request, response) => {
+    
+    // QUESTION: How does verifyToken obtain the other function listed here after it to pass it as its "next"
+    // (in my case: "nextFunc") function?
+router.post("/", verifyJWTToken, (request, response) => {
     // Take request body and turn it into data to add to the database:
     data = request.body;
     // Run the data through Mongoose schema and constructors (see const product),
@@ -52,26 +47,7 @@ router.post("/", verifyToken, (request, response) => {
         .catch(      error => { response.status(500).send( { message: error.message } ); } );
 });
 
-/**
-// Read all existing products - GET
-    // SELF-EXERCISE: Try defining the steps in comments like above but alone, and then writing the code around them
-    // (and from Mongoose documentation).
-router.get("/", (request, response) => {
-    // Request is to main URL - respond with all products.
-    // GET everything in database - find() query with no filter.
-    product.find()
-        // THEN: Compose a response for the client.
-        // Successful GET (200 OK) + send the data.
-        .then(obtainedData => { response.status(200).send(obtainedData); } )
-        // CATCH: Something failed. Generic failure (500 Internal Server Error) + raw caught error message.
-        .catch(error => { response.status(500).send( {message: error.message } ); } );
 
-        //.then(response.status(200).send(data))    // where data = product.find(), or at least that was the intention
-});
-/**/
-
-// !! Same as above but we modify the data before sending it back to the GET - see Array/ObjectToTailoredObject()
-// We CAN also enforce JWT validation on Read routes - if even the data that can be *read* is too sensitive.
 router.get("/", (request, response) => {
     product.find()
         //.then(obtainedData => { response.status(200).send(ArrayToTailoredObject(obtainedData)); } )
@@ -91,19 +67,13 @@ router.get("/", (request, response) => {
 
 
 router.get("/random", (request, response) => {
-    // get a random product
     product.countDocuments()
         .then(count => {
-            // get a random number between 0 and count
-            // * count is a problem if we hit 1 on Math.random() (but Math.random's range is said to be [0; 1) );
-            // * (count - 1) is a problem if we have 0 documents
             let random = Math.round(Math.random() * count );
 
-            // Skip method (fetch) one document at "random" offset
-            // (we still need to query all documents)
             product.findOne().skip(random)
                 .then(data => { response.status(200).send(ObjectToTailoredObject(data)) } )
-                .catch(error => { response.status(500).send( { message: "Wow, you couldn't fetch a random document" } ) } );
+                .catch(error => { response.status(500).send( { message: "Something failed when fetching a random document" } ) } );
         });
 });
 
@@ -137,15 +107,9 @@ router.get("/instock/:flag", (request, response) => {
         .catch(error => { response.status(500).send( { message: error.message } ); } );
 });
 
-// Read specific existing product - GET
-// :id here indicates TO EXPRESS to expect a parameter.
-// CORRESPONDS TO request.params.<key>, so: "/:myid" -> request.params.myid
+// Read specific existing product by ID - GET
 router.get("/:id", (request, response) => {
-    // Request is to specific id URL - filter response to that id.
-
-    // !! Does NOT correspond to Query > Query Parameters > anything, really. What are the works behind the magic of "/:id" ???
-
-    product.findById(request.params.id)     // equivalent (almost) to findOne({ _id: id }) for MongoDB
+    product.findById(request.params.id)
         .then(obtainedData => { response.status(200).send(ObjectToTailoredObject(obtainedData)); } )
         .catch(error => { response.status(500).send( { message: error.message } ); } );
 });
@@ -183,10 +147,9 @@ router.get("/price/:operator/:price", (request, response) => {
 
 
 // Update specific existing product - PUT (notice: not PATCH here)
-router.put("/:id", verifyToken, (request, response) => {
+router.put("/:id", verifyJWTToken, (request, response) => {
     const id = request.params.id;
 
-    // ~~update intricacies (POST vs PUT vs PATCH stuff) safeguarded by being forced to a Mongoose method, lame...
     product.findByIdAndUpdate(id, request.body) // by default, if a document is returned, it will be from BEFORE the update.
         .then(data => 
             {
@@ -200,7 +163,7 @@ router.put("/:id", verifyToken, (request, response) => {
 });
 
 // Delete specific existing product - DELETE
-router.delete("/:id", verifyToken, (request, response) => {
+router.delete("/:id", verifyJWTToken, (request, response) => {
     const id = request.params.id;
 
     product.findByIdAndDelete(id)

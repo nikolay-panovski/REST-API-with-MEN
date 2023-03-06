@@ -1,7 +1,7 @@
 const joi = require("joi");
 const jwt = require("jsonwebtoken");
 
-// validate registration
+
 function registerValidation(data) {
     const schema = new joi.object(
         {
@@ -15,7 +15,6 @@ function registerValidation(data) {
 }
 
 
-// validate login
 function loginValidation(data) {
     const schema = new joi.object(
         {
@@ -28,8 +27,7 @@ function loginValidation(data) {
 }
 
 
-// logic to verify our token (JSON Web Tokens JWT)
-function verifyToken(request, response, nextFunc) {
+function verifyJWTToken(request, response, nextFunc) {
     const token = request.header("auth-token");
     if (!token) return response.status(401).json( { error: "Access Denied" } );
 
@@ -45,4 +43,4 @@ function verifyToken(request, response, nextFunc) {
 }
 
 
-module.exports = { registerValidation, loginValidation, verifyToken };
+module.exports = { registerValidation, loginValidation, verifyJWTToken };

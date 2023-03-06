@@ -1,18 +1,6 @@
 const mongoose = require("mongoose");
 
-//const Schema = mongoose.Schema;   // cmd alias
-
 let productSchema = new mongoose.Schema(
-    
-    // product definition via properties
-
-    // tutorial product (tangible that one buys from an e-shop):
-
-    // { name: String
-    //   description: String, optional
-    //   price: Number
-    //   inStock: Boolean }
-
     // a JSON Schema looks much like a JSON.
     // "required" is a built-in validator in Mongoose: https://mongoosejs.com/docs/validation.html#built-in-validators
     {
@@ -21,15 +9,11 @@ let productSchema = new mongoose.Schema(
         price: {type: Number},
         inStock: {type: Boolean}
     }
-
-
-    // TODO: Add the provided pre() hook code for __v versioning!
-
-    // TODO: define my own "product" type to practice on scheming/creating for this assignment.
-    // (Twitch streams? or random videos? or just images?)
-    // TODO: write a Schema for it!
 )
 
+// Pre to the hook for Mongoose's "findOneAndUpdate" function.
+// I.e. this function right before findOneAndUpdate() when that is called.
+// Here: Overwrite any __v (document version) keys for existing documents and set the incremental for future "__v"s to +1.
 productSchema.pre('findOneAndUpdate', function() {
     const update = this.getUpdate();
     if (update.__v != null) {
@@ -52,7 +36,5 @@ module.exports = mongoose.model("product", productSchema);
 /**
  * https://mongoosejs.com/docs/models.html
  * "The first argument is the singular name of the collection your model is for.
- * Mongoose automatically looks for the plural, lowercased version of your model name.
- * Thus, for the example above," the model 'product' SHOULD BE for the 'products' collection in the database,
- * IF I understand correctly.
+ * Mongoose automatically looks for the plural, lowercased version of your model name."
  **/
