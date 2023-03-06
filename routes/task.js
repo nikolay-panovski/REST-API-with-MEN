@@ -79,7 +79,7 @@ router.get("/completion/:sc", (request, response) => {
 
 
 // POST: create new task
-router.post("/create/", (request, response) => {
+router.post("/create/", verifyJWTToken, (request, response) => {
     data = request.body;    // we expect exactly one document (without validation this is bad if multiple are attempted)
     // TODO: Can we validate data here and throw a 4xx error already if the format is invalid?
 
@@ -90,7 +90,7 @@ router.post("/create/", (request, response) => {
 
 // PATCH: update task by ID (only Name and Description allowed, at least for now)
 // If only one of the two is sent, the rest is NOT updated(patched).
-router.patch("/edit/:id", (request, response) => {
+router.patch("/edit/:id", verifyJWTToken, (request, response) => {
     const newName = request.body.name;
     const newDesc = request.body.description;
 
@@ -102,7 +102,7 @@ router.patch("/edit/:id", (request, response) => {
 });
 
 // DELETE: task by ID (+ validation - TODO: upgrade to "Manager only" + "always on Personal")
-router.delete("/delete/:id", (request, response) => {
+router.delete("/delete/:id", verifyJWTToken, (request, response) => {
     taskModel.findByIdAndDelete(request.params.id)
         .then(data => 
             {
