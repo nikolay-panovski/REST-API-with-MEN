@@ -8,7 +8,8 @@ const app = express();
 const swaggerUI = require("swagger-ui-express");
 const YAML = require("yamljs");
 // OR: import YAML from "yamljs";
-const swaggerDefinition = YAML.load("./swagger.yaml");
+//const swaggerDefinition = YAML.load("./swagger.yaml");        // manual Swagger YAML
+const swaggerDefinition = require("./swagger-output.json");     // swagger-autogen Swagger JSON
 app.use("/api/docs", swaggerUI.serve, swaggerUI.setup(swaggerDefinition));
 
 
