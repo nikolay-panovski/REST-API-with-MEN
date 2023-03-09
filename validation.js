@@ -37,7 +37,8 @@ function verifyJWTToken(request, response, nextFunc) {
         request.user = verified;
         nextFunc();
     }
-    catch (error) {
+    catch (e) {
+        // ~~caught error param is not used, the error below is a fresh new property
         response.status(400).json( { error: "Token is not valid" } );
     }
 }
