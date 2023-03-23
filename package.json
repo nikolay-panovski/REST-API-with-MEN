@@ -4,9 +4,9 @@
   "description": "MongoDB-ExpressJS-NodeJS REST API",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "cross-env NODE_ENV=test mocha --exit",
     "start": "node server.js",
-    "start-dev": "nodemon server.js"
+    "start-dev": "cross-env NODE_ENV=development nodemon server.js"
   },
   "keywords": [
     "mongodb",
@@ -28,5 +28,10 @@
     "mongoose": "^6.9.0",
     "swagger-ui-express": "^4.6.2",
     "yamljs": "^0.3.0"
+  },
+  "devDependencies": {
+    "chai": "^4.3.7",
+    "chai-http": "^4.3.0",
+    "mocha": "^10.2.0"
   }
 }
