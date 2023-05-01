@@ -12,7 +12,7 @@ let projectSchema = new mongoose.Schema(
         company_deliverer: { type: String, required: true /* type: ObjectId w/ ref: "company"? // uh oh... */ },
         cd_contact_person: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
         created_at: { type: Date, default: Date.now() },
-        finished_at: { type: Date, required: true, min: created_at },
+        finished_at: { type: Date, required: true, min: /*created_at*/Date.now() },
         deadline: { type: Date, required: true },
         assignees: [ { type: mongoose.Schema.Types.ObjectId, ref: "user" } ],
         tasks: [ { type: mongoose.Schema.Types.ObjectId, ref: "task" } ],
