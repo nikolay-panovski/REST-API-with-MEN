@@ -2,10 +2,16 @@ const mongoose = require("mongoose");
 
 let userSchema = new mongoose.Schema(
     {
-        username: {type: String, required: true, min: 6, max: 255},
+        name_first: {type: String, required: true, max: 255},
+        name_last: {type: String, required: true, max: 255},
         email: {type: String, required: true},
-        password: {type: String, required: true, min: 8, max: 255},
-        creationDate: {type: Date, default: Date.now}
+        company: {type: String, required: true},
+        role: {type: String, enum: ["Employee", "Manager", "Stakeholder"/*not guaranteed to remain*/], default: "Employee"},
+        password: {type: String, required: true, min: 8, max: 255
+            /*match:RegExp corresponding to "1 uppercase, 1 lowercase, 1 special, 1 number"? (out of scope)*/},
+        //projects: [ { type: mongoose.Schema.Types.ObjectId, ref: "project" } ],
+        tasks: [ { type: mongoose.Schema.Types.ObjectId, ref: "task" } ],
+        //time_registered_total: []?    // what is the usage of this?
     }
 )
 
