@@ -11,14 +11,15 @@ let taskSchema = new mongoose.Schema(
         description: { type: String, required: false },
         state_visibility: { type: String, enum: ["Personal", "Unpublished", "Published"], default: "Personal" },
         state_completion: { type: String, enum: ["Incomplete", "Completed", "Cancelled"], default: "Incomplete" },
-        //project: { type: mongoose.Schema.Types.ObjectId, ref: "project" },   // careful - leave refs for later
-        //assignee: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
-        created_at: { type: Date, default: Date.now() },
-        finished_at: { type: Date, required: false/* remove when finalized */ /* good to have: validation for being After created_at*/ },
+        project: { type: mongoose.Schema.Types.ObjectId, ref: "project" },
+        assignee: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
+        created_at: { type: Date, required: true, default: Date.now() },
+        assigned_at: { type: Date, required: false, default: created_at },
+        finished_at: { type: Date, required: false /* good to have: validation for being After created_at*/ },
         //deadline: { type: Date | ObjectId ref with ref: project.deadline /* is that union possible? */ },
         time_estimated: { type: Number /* where Number = minutes; formatted separately */, default: 0 },
         time_registered: { type: Number /* see above */, default: 0 }
-        //assigned_at: { type: Date, /* see finished_at*/ }
+        
     }
 );
 
