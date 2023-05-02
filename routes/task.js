@@ -100,15 +100,13 @@ router.post("/dirty/create/", async (request, response) => {
 
     let testAssignee = await userModel.findOne( { name_first: "Admin" } );
 
+    // create() is syntactic sugar for new Model().save(): https://mongoosejs.com/docs/api/model.html#Model.create()
+    // It isn't graceful to the database when doing anything other than a response in the .then that might fail on its own!
+    // Consider using new Model() and later save() instead.
     taskModel.create(data)
-        .then( /*(insertedData) => insertedData.populate("assignee")
-                                    .exec(function(error, task) {   // logger function, worth naming and separating
-                                        if (error) console.log(error);
-                                        else console.log(task.assignee.name_first);
-                                    })*/
-                async () => { await testAssignee.populate("tasks");
-                        response.status(200).send( { message: "Now check the Admin user..." } );
-                      } )
+        .then( (insertedData) => { testAssignee.tasks.push(insertedData);
+                                   response.status(200).send( { message: "Now check the Admin user..." } );
+                                 } )
         .catch( (error) => { response.status(500).send( { message: error.message } ); } );
 });
 
