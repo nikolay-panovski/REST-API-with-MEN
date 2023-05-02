@@ -94,7 +94,7 @@ router.post("/create/", verifyJWTToken, (request, response) => {
 // DO NOT EVEN THINK ABOUT USING THIS IN PRODUCTION (THE FRONTEND) !!
 //
 // Incorrect logic in creating this route: see this answer https://stackoverflow.com/a/44288255
-// populate() below fails inexplicably (probably because it gets nothing *to populate with*), but it is not what I want anyway.
+// populate() fails inexplicably (probably because it gets nothing *to populate with*), but it is not what I want anyway.
 router.post("/dirty/create/", async (request, response) => {
     data = request.body;
 
@@ -105,6 +105,7 @@ router.post("/dirty/create/", async (request, response) => {
     // Consider using new Model() and later save() instead.
     taskModel.create(data)
         .then( (insertedData) => { testAssignee.tasks.push(insertedData);
+                                   testAssignee.save();
                                    response.status(200).send( { message: "Now check the Admin user..." } );
                                  } )
         .catch( (error) => { response.status(500).send( { message: error.message } ); } );
