@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const taskModel = require("../models/task.js");
+const userModel = require("../models/user.js");
 const { verifyJWTToken } = require("../validation.js");
 
 // define properties to map uniquely for the current object Model:
@@ -86,6 +87,29 @@ router.post("/create/", verifyJWTToken, (request, response) => {
     taskModel.create(data)  // there is no insertOne()
         .then( (insertedData) => { response.status(201).send( { message: `Task "${insertedData.name}" created successfully.` } ); } )
         .catch(       (error) => { response.status(500).send( { message: error.message } ); } );
+});
+
+// TEST POST: create new task with finalized model, do not pass "assignee" ObjectId in body
+// but still assign a ref to a default user that already exists
+// DO NOT EVEN THINK ABOUT USING THIS IN PRODUCTION (THE FRONTEND) !!
+//
+// Incorrect logic in creating this route: see this answer https://stackoverflow.com/a/44288255
+// populate() below fails inexplicably (probably because it gets nothing *to populate with*), but it is not what I want anyway.
+router.post("/dirty/create/", async (request, response) => {
+    data = request.body;
+
+    let testAssignee = await userModel.findOne( { name_first: "Admin" } );
+
+    taskModel.create(data)
+        .then( /*(insertedData) => insertedData.populate("assignee")
+                                    .exec(function(error, task) {   // logger function, worth naming and separating
+                                        if (error) console.log(error);
+                                        else console.log(task.assignee.name_first);
+                                    })*/
+                async () => { await testAssignee.populate("tasks");
+                        response.status(200).send( { message: "Now check the Admin user..." } );
+                      } )
+        .catch( (error) => { response.status(500).send( { message: error.message } ); } );
 });
 
 // PATCH: update task by ID (only Name and Description allowed, at least for now)
