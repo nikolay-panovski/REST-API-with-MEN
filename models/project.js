@@ -3,20 +3,14 @@ const mongoose = require("mongoose");
 
 let projectSchema = new mongoose.Schema(
     {
-        name: { type: String, required: true, maxLength: 255
-            /*, unique: true? // maybe it is not required by design, also unique IS NOT A VALIDATOR:
-                              // https://mongoosejs.com/docs/faq.html#unique-doesnt-work */ },
+        name: { type: String, required: true, maxLength: 255 },
         description: { type: String, required: false },
-        company_stakeholder: { type: String, required: true /* type: ObjectId w/ ref: "company"? // uh oh... */ },
-        cs_contact_person: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
-        company_deliverer: { type: String, required: true /* type: ObjectId w/ ref: "company"? // uh oh... */ },
-        cd_contact_person: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
+        company_client: { type: String, required: true /* type: "company" will NOT be created for this assignment */ },
         created_at: { type: Date, default: Date.now() },
         finished_at: { type: Date, required: true, min: /*created_at*/Date.now() },
         deadline: { type: Date, required: true },
         assignees: [ { type: mongoose.Schema.Types.ObjectId, ref: "user" } ],
         tasks: [ { type: mongoose.Schema.Types.ObjectId, ref: "task" } ],
-        //time_registered_total: []?    // what is the usage of this within a project and not an individual task?
     }
 );
 
