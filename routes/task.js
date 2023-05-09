@@ -49,7 +49,7 @@ router.get("/", (request, response) => {
 // every URL query with one parameter is only checked against the first "/:parameter" route
 router.get("/id/:id", (request, response) => {
     taskModel.findById(request.params.id)
-        .then( (oneTaskData) => { response.status(200).send( ObjectToTailoredObject(oneTaskData) )} )
+        .then( (oneTaskData) => { response.status(200).send( oneTaskData )} )
         .catch( (error) => { response.status(500).send( { message: error.message } )} );
 });
 
@@ -141,5 +141,30 @@ router.delete("/delete/:id", verifyJWTToken, (request, response) => {
 });
 
 // TODO: DELETE: design choice for whether I need any others. Deleting by non-unique fields is dangerous.
+
+
+// TODO: ORGANIZE !!
+// COPIED FROM PROJECTS FOR TESTING
+// GET: current user tasks for "free tasks" on dashboard
+// (might not be necessary if we preserve user info from register/login routes)
+router.get("/currentuser/:id", (request, response) => {
+    userModel.findById(request.params.id)
+    .then(foundUser => { 
+        let tasksIDsArray = foundUser.tasks;
+        let tasksArray = new Array();
+        for (const taskID of tasksIDsArray) {
+            fetch("http://localhost:4000/api/task/id/" + taskID)
+                .then(taskResponse => { console.log(taskResponse.body); tasksArray.push(taskResponse.body); })
+                .catch(error => { console.log(error); } );
+        }
+
+        response.status(200).send({
+            tasks: tasksArray
+        });
+    })
+    .catch(error => { response.status(500).send( { message: error.message } ); } );
+
+
+});
 
 module.exports = router;
