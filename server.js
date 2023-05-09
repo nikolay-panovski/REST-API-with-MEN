@@ -11,9 +11,13 @@ app.use("/api/docs", swaggerUI.serve, swaggerUI.setup(swaggerDefinition));
 
 
 // import routes used in this application (reference with or without .js does not matter)
+// (products preserved for testing, but not developed anymore)
 const productRoutes = require("./routes/product.js");
+
+const projectRoutes = require("./routes/project.js");
 const taskRoutes = require("./routes/task.js");
-const authRoutes = require("./routes/auth.js");
+const authRoutes = require("./routes/user_auth.js");
+const userCrudRoutes = require("./routes/user_crud.js");
 
 // misc (setups):
 // .env file
@@ -35,11 +39,13 @@ mongoose.connect(
 );
 
 
-// CRUD routes (aka POST/GET/PUT *or* PATCH/DELETE)
-// TODO?: Redefine these if I need more specific route URLs (for example, some product routes not falling under /api/products)
-app.use("/api/products", productRoutes);
-app.use("/api/tasks", taskRoutes);
-app.use("/api/user", authRoutes);
+// use CRUD routes (aka POST/GET/PUT *or* PATCH/DELETE)
+app.use("/api/product", productRoutes);
+
+app.use("/api/project", projectRoutes);
+app.use("/api/task", taskRoutes);
+app.use("/api/userAuth", authRoutes);
+app.use("/api/user", userCrudRoutes);
 
 
 const PORT = process.env.PORT || 4000;
