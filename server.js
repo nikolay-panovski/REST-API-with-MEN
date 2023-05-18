@@ -16,7 +16,7 @@ const productRoutes = require("./routes/product.js");
 
 const projectRoutes = require("./routes/project.js");
 const taskRoutes = require("./routes/task.js");
-const authRoutes = require("./routes/user_auth.js");
+const authRoutes = require("./routes/auth.js");
 const userCrudRoutes = require("./routes/user_crud.js");
 
 // misc (setups):
