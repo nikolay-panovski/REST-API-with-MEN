@@ -71,9 +71,12 @@ router.post("/login", async (request, response) => {
     );
 
     
+    // This produces a response with header { auth-token: <JWT token here> }
+    // *and* also sends the { error ; data } object below as the response BODY (which also contains the token).
     response.header("auth-token", token).json({
         error: null,
-        data: { token }
+        data: { token },
+        userHandle: userEntry._id
     });
     // CAN DO: On a front-end app that works together with this, save/cache the token (also matters how often it expires).
     // This comes with the implication that the front-end app is tied to the backend/server/database, and NOT the user, if I understand correctly.
