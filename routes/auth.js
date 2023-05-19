@@ -49,19 +49,39 @@ router.post("/register", async (request, response) => {
 });
 
 router.post("/login", async (request, response) => {
-    const { error } = loginValidation(request.body);
-    if (error) {
-        return response.status(400).json( { error: error.details[0].message } );
+
+    let result =
+    {
+        error: "",
+        data:
+        {
+            token: "",
+            userHandle: ""
+        }
+    }
+
+    const { err } = loginValidation(request.body);
+    if (err) {
+        result.error = err.details[0].message;
+        result.data.token = null;
+        result.data.userHandle = null;
+        return response.status(400).json(result);
     }
 
     const userEntry = await user.findOne( { email: request.body.email } );
     if (!userEntry) {
-        return response.status(400).json( { error: "Email does not exist in the database!" } );
+        result.error = "Email does not exist in the database!";
+        result.data.token = null;
+        result.data.userHandle = null;
+        return response.status(400).json(result);
     }
 
     const isPasswordValid = await bcrypt.compare(request.body.password, userEntry.password);
     if (!isPasswordValid) {
-        return response.status(400).json( { error: "Wrong email or password!" } );
+        result.error = "Wrong email or password!";
+        result.data.token = null;
+        result.data.userHandle = null;
+        return response.status(400).json(result);
     }
 
 
@@ -76,13 +96,12 @@ router.post("/login", async (request, response) => {
         }
     );
 
-    
+    result.error = null;
+    result.data.token = token;
+    result.data.userHandle = userEntry._id;
     // This produces a response with header { auth-token: <JWT token here> }
     // *and* also sends the { error ; data } object below as the response BODY (which also contains the token).
-    response.header("auth-token", token).json({
-        error: null,
-        data: { token, userHandle: userEntry._id }
-    });
+    response.header("auth-token", token).json(result);
     // CAN DO: On a front-end app that works together with this, save/cache the token (also matters how often it expires).
     // This comes with the implication that the front-end app is tied to the backend/server/database, and NOT the user, if I understand correctly.
 });
