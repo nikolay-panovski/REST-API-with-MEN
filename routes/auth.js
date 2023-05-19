@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 
 
 // Registration - POST
+// ONLY USE THIS ROUTE THROUGH TESTING CLIENTS! FRONTEND WILL NOT PROVIDE A METHOD TO CALL THIS!
 router.post("/register", async (request, response) => {
     // Validate the user input (via library: joi):
     // QUESTION: What if this was indeed only contained in this file after all? + What if no joi package?
@@ -27,9 +28,14 @@ router.post("/register", async (request, response) => {
     // OR: const password = await bcrypt.hash(request.body.password, 10); where 10 = # rounds to generate salt (see genSalt())
 
     const userObject = new user({
-        username: request.body.username,
+        name_first: request.body.name_first,
+        name_last: request.body.name_last,
         email: request.body.email,
-        password: password
+        password: password,
+        company: "100%DEV",     // will not implement company model or use register route on frontend, this is hardcoded only to visualize that
+        role: request.body.role,    // same story here, but I might want to insert both managers and employees in the database, or check for theoretical future errors...
+        projects: new Array(),
+        tasks: new Array(),
     })
 
     try {

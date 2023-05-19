@@ -5,9 +5,18 @@ const jwt = require("jsonwebtoken");
 function registerValidation(data) {
     const schema = new joi.object(
         {
-            username: joi.string().min(6).max(255).required(),
+            name_first: joi.string().max(255).required(),
+            name_last: joi.string().max(255).required(),
             email: joi.string().required(),
-            password: joi.string().min(8).max(255).required()
+            password: joi.string().min(8).max(255).required(),
+            company: joi.string(),
+            // To export an ("enum") array such that an enum change won't break 7 other files in the application,
+            // and use it here in valid(), use the array with JS spread syntax: valid(...array) to unpack it into parameters.
+            role: joi.string().valid("Employee", "Manager").error(errors => {
+                errors.forEach(error => {
+                    if (error.code == "any.only") error.message = "Allowed roles are Employee and Manager. Certain values like Stakeholder and Client are explicitly considered but not supported in this version. Otherwise, check for typos, or faulty frontend options.";
+                })
+            })
         }
     );
 
@@ -34,7 +43,7 @@ function verifyJWTToken(request, response, nextFunc) {
     try {
         const verified = jwt.verify(token, process.env.TOKEN_SECRET);
         
-        request.user = verified;
+        request.user = verified;    // QUESTION: why "user"? and where does "request" get reused for "user" to be inspected - nextFunc?
         nextFunc();
     }
     catch (e) {
