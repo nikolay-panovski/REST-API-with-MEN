@@ -87,7 +87,7 @@ router.post("/login", async (request, response) => {
 
     const token = jwt.sign(
         {                                           // payload
-            name: userEntry.name,
+            name: userEntry.name_first + " " + userEntry.name_last,
             id: userEntry._id
         },
         process.env.TOKEN_SECRET,                   // TOKEN_SECRET
