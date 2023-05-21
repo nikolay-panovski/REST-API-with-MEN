@@ -98,7 +98,8 @@ router.post("/login", async (request, response) => {
 
     result.error = null;
     result.data.token = token;
-    result.data.userHandle = userEntry._id;
+    result.data.userHandle = userEntry; // userEntry should have been configured in the model (user.js) to not return password!!
+
     // This produces a response with header { auth-token: <JWT token here> }
     // *and* also sends the { error ; data } object below as the response BODY (which also contains the token).
     response.header("auth-token", token).json(result);
