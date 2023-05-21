@@ -9,8 +9,11 @@ let userSchema = new mongoose.Schema(
               can use https://www.npmjs.com/package/mongoose-unique-validator instead */},
         company: {type: String/*, required: true*/},
         role: {type: String, enum: ["Employee", "Manager", "Stakeholder"/*not guaranteed to remain*/], default: "Employee"},
-        password: {type: String, required: true, min: 8, max: 255
-            /*match:RegExp corresponding to "1 uppercase, 1 lowercase, 1 special, 1 number"? (out of scope)*/},
+        password: {type: String, required: true, min: 8, max: 255,
+            /*match:RegExp corresponding to "1 uppercase, 1 lowercase, 1 special, 1 number"? (out of scope)*/
+            // exclude password from being returned from DB queries by default
+            // https://mongoosejs.com/docs/api/schematype.html#SchemaType.prototype.select()
+            select: false },
         projects: [ { type: mongoose.Schema.Types.ObjectId, ref: "project" } ],
         tasks: [ { type: mongoose.Schema.Types.ObjectId, ref: "task" } ],
         //time_registered_total: []?    // what is the usage of this?
