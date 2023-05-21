@@ -56,7 +56,7 @@ router.post("/login", async (request, response) => {
         data:
         {
             token: "",
-            userHandle: ""
+            userObject: ""
         }
     }
 
@@ -64,7 +64,7 @@ router.post("/login", async (request, response) => {
     if (err) {
         result.error = err.details[0].message;
         result.data.token = null;
-        result.data.userHandle = null;
+        result.data.userObject = null;
         return response.status(400).json(result);
     }
 
@@ -72,7 +72,7 @@ router.post("/login", async (request, response) => {
     if (!userEntry) {
         result.error = "Email does not exist in the database!";
         result.data.token = null;
-        result.data.userHandle = null;
+        result.data.userObject = null;
         return response.status(400).json(result);
     }
 
@@ -80,7 +80,7 @@ router.post("/login", async (request, response) => {
     if (!isPasswordValid) {
         result.error = "Wrong email or password!";
         result.data.token = null;
-        result.data.userHandle = null;
+        result.data.userObject = null;
         return response.status(400).json(result);
     }
 
@@ -98,7 +98,7 @@ router.post("/login", async (request, response) => {
 
     result.error = null;
     result.data.token = token;
-    result.data.userHandle = userEntry._id;
+    result.data.userObject = { _id: userEntry._id, name_first: userEntry.name_first, name_last: userEntry.name_last, company: userEntry.company, role: userEntry.role };
     // This produces a response with header { auth-token: <JWT token here> }
     // *and* also sends the { error ; data } object below as the response BODY (which also contains the token).
     response.header("auth-token", token).json(result);
