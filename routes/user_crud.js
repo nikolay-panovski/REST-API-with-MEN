@@ -12,7 +12,7 @@ router.get("/headerinfo/:id", (request, response) => {
                     role: foundUser.role
                 });
         })
-        .catch(error => { response.status(500).send( { message: error.message } ); } );
+        .catch(error => { response.status(500).send( { error: error.message } ); } );
 });
 
 // GET: current user role for conditional displays
@@ -23,7 +23,7 @@ router.get("/roleinfo/:id", (request, response) => {
                     role: foundUser.role
                 });
         })
-        .catch(error => { response.status(500).send( { message: error.message } ); } );
+        .catch(error => { response.status(500).send( { error: error.message } ); } );
 });
 
 module.exports = router;

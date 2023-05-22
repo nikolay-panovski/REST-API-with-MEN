@@ -44,7 +44,7 @@ function ObjectToTailoredObject(inputObject) {
 router.get("/", (request, response) => {
     taskModel.find()
         .then( (tasksData) => { response.status(200).send( ArrayToTailoredObject(tasksData) )} )
-        .catch( (error) => { response.status(500).send( { message: error.message } )} );
+        .catch( (error) => { response.status(500).send( { error: error.message } )} );
 });
 
 // GET: specific task by ID
@@ -54,7 +54,7 @@ router.get("/", (request, response) => {
 router.get("/id/:id", (request, response) => {
     taskModel.findById(request.params.id)
         .then( (oneTaskData) => { response.status(200).send( oneTaskData )} )
-        .catch( (error) => { response.status(500).send( { message: error.message } )} );
+        .catch( (error) => { response.status(500).send( { error: error.message } )} );
 });
 
 // GET: specific tasks by Visibility (TODO: restrict the full access to Manager users only, return only Personal tasks to others)
@@ -63,7 +63,7 @@ router.get("/id/:id", (request, response) => {
 router.get("/visibility/:sv", (request, response) => {
     taskModel.find( { state_visibility: request.params.sv } )
         .then( (tasksData) => { response.status(200).send( ArrayToTailoredObject(tasksData) )} )
-        .catch( (error) => { response.status(500).send( { message: error.message } )} );
+        .catch( (error) => { response.status(500).send( { error: error.message } )} );
 });
 
 // GET: specific tasks by Project
@@ -71,13 +71,13 @@ router.get("/visibility/:sv", (request, response) => {
 router.get("/project/:pr", (request, response) => {
     taskModel.find( { project: request.params.pr } )
         .then( (tasksData) => { response.status(200).send( tasksData )} )
-        .catch( (error) => { response.status(500).send( { message: error.message } )} );
+        .catch( (error) => { response.status(500).send( { error: error.message } )} );
 });
 
 router.get("/public/:userid", (request, response) => {
     taskModel.find( { project: { $ne: null } , assignee: request.params.userid } )
         .then( (tasksData) => { response.status(200).send( tasksData )} )
-        .catch( (error) => { response.status(500).send( { message: error.message } )} );
+        .catch( (error) => { response.status(500).send( { error: error.message } )} );
 });
 
 // GET: specific tasks by Assignee !!! (combine with task.project === null for personal tasks)
@@ -86,7 +86,7 @@ router.get("/personal/:userid", (request, response) => {
     taskModel.find( { project: null, assignee: request.params.userid } )
         .then( (tasksData) => { response.status(200).send( tasksData )} )
         // Can we do any better with the error messages and the data that the frontend can use from them for the user?
-        .catch( (error) => { response.status(500).send( { message: error.message } )} );
+        .catch( (error) => { response.status(500).send( { error: error.message } )} );
 });
 
 // TODO: GETs: created_at(? - if any role needs that for something), finished_at(? - see left), and missing properties
@@ -99,7 +99,7 @@ router.post("/create/", verifyJWTToken, (request, response) => {
 
     taskModel.create(data)  // there is no insertOne()
         .then( (insertedData) => { response.status(201).send( { message: `Task "${insertedData.name}" created successfully.` } ); } )
-        .catch(       (error) => { response.status(500).send( { message: error.message } ); } );
+        .catch(       (error) => { response.status(500).send( { error: error.message } ); } );
 });
 
 // TEST POST: create new task with finalized model, do not pass "assignee" ObjectId in body
@@ -121,7 +121,7 @@ router.post("/dirty/create/", async (request, response) => {
                                    testAssignee.save();
                                    response.status(200).send( { message: "Now check the Admin user..." } );
                                  } )
-        .catch( (error) => { response.status(500).send( { message: error.message } ); } );
+        .catch( (error) => { response.status(500).send( { error: error.message } ); } );
 });
 
 // PATCH: update task by ID (only Name and Description allowed, at least for now)
@@ -134,7 +134,7 @@ router.patch("/edit/:id", verifyJWTToken, (request, response) => {
     // see update param, options param, and $set
     taskModel.findByIdAndUpdate(request.params.id, { $set: { name: newName, description: newDesc} }, { overwrite: false } )
         .then( (updatedData) => { response.status(200).send( { message: `Task "${updatedData.name}" updated successfully.` } ); } )
-        .catch(      (error) => { response.status(500).send( { message: error.message } ); } );
+        .catch(      (error) => { response.status(500).send( { error: error.message } ); } );
 });
 
 // DELETE: task by ID (+ validation - TODO: upgrade to "Manager only" + "always on Personal")
@@ -146,11 +146,11 @@ router.delete("/delete/:id", verifyJWTToken, (request, response) => {
                                 // EDIT: this seems off, this check probably should be before deletion.
                                 // Right now I am getting 500 from catch, "id is not defined".
                 {
-                    response.status(404).send( { message: "Cannot delete Product with ID: " + id + ". It may not exist." } );
+                    response.status(404).send( { error: "Cannot delete Product with ID: " + id + ". It may not exist." } );
                 }
                 else response.status(200).send( { message: "Product successfully deleted." } );
             })
-        .catch(error => { response.status(500).send( { message: error.message } ); } );
+        .catch(error => { response.status(500).send( { error: error.message } ); } );
 });
 
 // TODO: DELETE: design choice for whether I need any others. Deleting by non-unique fields is dangerous.
@@ -175,7 +175,7 @@ router.get("/currentuser/:id", (request, response) => {
             tasks: tasksArray
         });
     })
-    .catch(error => { response.status(500).send( { message: error.message } ); } );
+    .catch(error => { response.status(500).send( { error: error.message } ); } );
 
 
 });

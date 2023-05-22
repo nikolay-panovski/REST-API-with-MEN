@@ -44,7 +44,7 @@ router.post("/register", async (request, response) => {
         response.json( { error: null, data: savedUser._id } );
     }
     catch (error) {
-        response.status(400).json( { error } );
+        response.status(400).json( { error: error.message } );
     }
 });
 

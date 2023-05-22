@@ -12,7 +12,7 @@ router.get("/currentuser/:id", (request, response) => {
                 projects: foundUser.projects
             });
         })
-        .catch(error => { response.status(500).send( { message: error.message } ); } );
+        .catch(error => { response.status(500).send( { error: error.message } ); } );
 });
 
 // GET: specific project (from button link) for project page
@@ -29,7 +29,7 @@ router.get("/:id", (request, response) => {
             tasks: foundProject.tasks
             });
         })
-        .catch(error => { response.status(500).send( { message: error.message } ); } );
+        .catch(error => { response.status(500).send( { error: error.message } ); } );
 });
 
 router.post("/create", verifyJWTToken, (request, response) => {
@@ -40,11 +40,11 @@ router.post("/create", verifyJWTToken, (request, response) => {
             // apply the second side of the "assignees" reference - project ID on user.
             // project creation will always have the first assignee be the manager who creates it, so for user ID look at the first assignee.
             user.findByIdAndUpdate(insertedData.assignees[0], { $push: { projects: insertedData._id } } )
-                .catch( (error) => { response.status(500).send( { message: error.message } ); } );
+                .catch( (error) => { response.status(500).send( { error: error.message } ); } );
 
             response.status(201).send( { message: `Project "${insertedData.name}" created successfully.` } );
             } )
-        .catch(       (error) => { response.status(500).send( { message: error.message } ); } );
+        .catch(       (error) => { response.status(500).send( { error: error.message } ); } );
 });
 
     
