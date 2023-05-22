@@ -15,6 +15,13 @@ router.get("/currentuser/:id", (request, response) => {
         .catch(error => { response.status(500).send( { error: error.message } ); } );
 });
 
+// GET: all projects (of the company, of which here there is one)
+router.get("/all", (request, response) => {
+    project.find( /*{ company_developer: request.params.<currentUser>}*/ )
+        .then(foundProjects => { response.status(200).send(foundProjects)})
+        .catch(error => { response.status(500).send( { error: error.message } ); } );
+});
+
 // GET: specific project (from button link) for project page
 router.get("/:id", (request, response) => {
     project.findById(request.params.id)
