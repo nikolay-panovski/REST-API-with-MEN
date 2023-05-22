@@ -1,9 +1,11 @@
 const router = require("express").Router();
 const taskModel = require("../models/task.js");
+const projectModel = require("../models/project.js");
 const userModel = require("../models/user.js");
 const { verifyJWTToken } = require("../validation.js");
 
 // define properties to map uniquely for the current object Model:
+// [REMOVE]: use filters during model finding instead?
 function ArrayToTailoredObject(inputArray) {
     return inputArray.map(element => (
         {
@@ -38,6 +40,7 @@ function ObjectToTailoredObject(inputObject) {
 }
 
 // GET: all stored tasks
+// [REMOVE]: no single user would need to fetch all tasks in the entire collection, without any filtering/organization (well, not sure about managers)
 router.get("/", (request, response) => {
     taskModel.find()
         .then( (tasksData) => { response.status(200).send( ArrayToTailoredObject(tasksData) )} )
@@ -47,32 +50,42 @@ router.get("/", (request, response) => {
 // GET: specific task by ID
 // the first /id is added to circumvent the problem where
 // every URL query with one parameter is only checked against the first "/:parameter" route
+// [USE]: task details page? (not planned properly)
 router.get("/id/:id", (request, response) => {
     taskModel.findById(request.params.id)
         .then( (oneTaskData) => { response.status(200).send( oneTaskData )} )
         .catch( (error) => { response.status(500).send( { message: error.message } )} );
 });
 
-// GET: specific task by Name
-// WARNING: URL queries are case sensitive (without extra code) and spaces have to be replaced by "%20" (at least in Chrome).
-router.get("/:name", (request, response) => {
-    taskModel.findOne( { name: request.params.name } )
-        .then( (tasksData) => { response.status(200).send( ObjectToTailoredObject(tasksData) )} )
-        .catch( (error) => { response.status(500).send( { message: error.message } )} );
-});
-
-// GET: specific task by Visibility (TODO: restrict the full access to Manager users only, return only Personal tasks to others)
+// GET: specific tasks by Visibility (TODO: restrict the full access to Manager users only, return only Personal tasks to others)
 // TODO (multiple routes): ERROR instead of empty array on non-existent parameter (if-check tasksData)
+// [USE]: for dashboard - filter between project tasks and personal tasks (the former needs an extra filter on task.assignee)
 router.get("/visibility/:sv", (request, response) => {
     taskModel.find( { state_visibility: request.params.sv } )
         .then( (tasksData) => { response.status(200).send( ArrayToTailoredObject(tasksData) )} )
         .catch( (error) => { response.status(500).send( { message: error.message } )} );
 });
 
-// GET: specific task by Completion
-router.get("/completion/:sc", (request, response) => {
-    taskModel.find( { state_completion: request.params.sc } )
-        .then( (tasksData) => { response.status(200).send( ArrayToTailoredObject(tasksData) )} )
+// GET: specific tasks by Project
+// [REMOVE]: useful for dashboard organization and sorting, but those are dropped from current scope. NOT useful for meaningfully fetching user's current tasks.
+router.get("/project/:pr", (request, response) => {
+    taskModel.find( { project: request.params.pr } )
+        .then( (tasksData) => { response.status(200).send( tasksData )} )
+        .catch( (error) => { response.status(500).send( { message: error.message } )} );
+});
+
+router.get("/public/:userid", (request, response) => {
+    taskModel.find( { project: { $ne: null } , assignee: request.params.userid } )
+        .then( (tasksData) => { response.status(200).send( tasksData )} )
+        .catch( (error) => { response.status(500).send( { message: error.message } )} );
+});
+
+// GET: specific tasks by Assignee !!! (combine with task.project === null for personal tasks)
+// de facto allows getting the personal tasks of any user. there is probably no way to mitigate that without help from frontend.
+router.get("/personal/:userid", (request, response) => {
+    taskModel.find( { project: null, assignee: request.params.userid } )
+        .then( (tasksData) => { response.status(200).send( tasksData )} )
+        // Can we do any better with the error messages and the data that the frontend can use from them for the user?
         .catch( (error) => { response.status(500).send( { message: error.message } )} );
 });
 
