@@ -12,10 +12,9 @@ function registerValidation(data) {
             company: joi.string(),
             // To export an ("enum") array such that an enum change won't break 7 other files in the application,
             // and use it here in valid(), use the array with JS spread syntax: valid(...array) to unpack it into parameters.
-            role: joi.string().valid("Employee", "Manager").error(errors => {
-                errors.forEach(error => {
-                    if (error.code == "any.only") error.message = "Allowed roles are Employee and Manager. Certain values like Stakeholder and Client are explicitly considered but not supported in this version. Otherwise, check for typos, or faulty frontend options.";
-                })
+            role: joi.string().valid("Employee", "Manager")
+            .messages({
+              "any.only": "Allowed roles are Employee and Manager. Certain values like Stakeholder and Client are explicitly considered but not supported in this version. Otherwise, check for typos, or faulty frontend options."  
             })
         }
     );
