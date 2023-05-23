@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const project = require("../models/project.js");
 const user = require("../models/user.js");
+const task = require("../models/task.js");
 const { verifyJWTToken } = require("../validation.js");
 
 
@@ -35,6 +36,18 @@ router.get("/:id", (request, response) => {
             assignees: foundProject.assignees,
             tasks: foundProject.tasks
             });
+        })
+        .catch(error => { response.status(500).send( { error: error.message } ); } );
+});
+
+// GET: all tasks of a specifc project by ID (for project page)
+// in full document form of the included tasks, so that they can be rendered by frontend
+router.get("/tasks/:id", (request, response) => {
+    project.findById(request.params.id)
+        .then((foundProject) => {
+            foundProject.populate("tasks")
+                .then( (fullProject) => { response.status(200).send(fullProject); } )
+                .catch(error => { response.status(500).send( { error: "Document population failure! " + error.message } ); } );
         })
         .catch(error => { response.status(500).send( { error: error.message } ); } );
 });
