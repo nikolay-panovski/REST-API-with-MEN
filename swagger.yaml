@@ -14,7 +14,7 @@ info:
 servers:
   - url: http://localhost:4000/api/
     description: Localhost development server
-  - url: 
+  - url: https://pwa-todoapp-backend.onrender.com/api/
     description: Remote Render deployment
 
 tags:
