@@ -80,10 +80,11 @@ router.post("/create/", verifyJWTToken, (request, response) => {
 router.patch("/edit/:id", verifyJWTToken, (request, response) => {
     const newName = request.body.name;
     const newDesc = request.body.description;
+    const newTimeReg = request.body.time_registered;
 
     // https://mongoosejs.com/docs/api/model.html#model_Model-findByIdAndUpdate
     // see update param, options param, and $set
-    taskModel.findByIdAndUpdate(request.params.id, { $set: { name: newName, description: newDesc} }, { overwrite: false } )
+    taskModel.findByIdAndUpdate(request.params.id, { $set: { name: newName, description: newDesc, time_registered: newTimeReg } }, { overwrite: false } )
         .then( (updatedData) => { response.status(200).send( { message: `Task "${updatedData.name}" updated successfully.` } ); } )
         .catch(      (error) => { response.status(500).send( { error: error.message } ); } );
 });
