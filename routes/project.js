@@ -49,7 +49,8 @@ router.post("/create", verifyJWTToken, (request, response) => {
             user.findByIdAndUpdate(insertedData.assignees[0], { $push: { projects: insertedData._id } } )
                 .catch( (error) => { response.status(500).send( { error: error.message } ); } );
 
-            response.status(201).send( { message: `Project "${insertedData.name}" created successfully.` } );
+            response.status(201).send( { message: `Project "${insertedData.name}" created successfully.`,
+                                         _id: insertedData._id } );
             } )
         .catch(       (error) => { response.status(500).send( { error: error.message } ); } );
 });
