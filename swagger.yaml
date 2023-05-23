@@ -4,16 +4,18 @@
 
 openapi: 3.0.0
 info:
-  title: REST API with MEN
+  title: PWA REST API
   # Things won't be cool if I want to write a meaty, multiline description:
   # https://stackoverflow.com/a/21699210
-  description: "This is a student API made for a course.
-    Contains the basics - CRUD operations for minimal registered and guest users.\n
-    Content domain: Tasks (for a project management app. Continued in another course.)"
-  version: 1.0.0-tutorial
+  description: "This is a student API made for 2 courses (backend to a frontend).
+    Contains routes for creating and updating projects and tasks. All routes except user routes require login auth.\n
+    Content domain: Tasks (for a project management app.)"
+  version: 1.0.0
 servers:
   - url: http://localhost:4000/api/
     description: Localhost development server
+  - url: 
+    description: Remote Render deployment
 
 tags:
   - name: GET Routes
@@ -55,20 +57,50 @@ components:
     User:
       type: object
       properties:
-        username:
+        name_first:
+          type: string
+        name_last:
           type: string
         email:
           type: string
+        company:
+          type: string
+        role:
+          type: string
         password:
           type: string
-        date:
+        projects:
+          type: ObjectId[]
+        tasks:
+          type: ObjectId[]
+
+    Project:
+      type: object
+      properties:
+        id:
           type: string
+        name:
+          type: string
+        description:
+          type: string
+        company_client:
+          type: string
+        created_at:
+          type: date
+        finished_at:
+          type: date  
+        deadline:
+          type: date
+        assignees:
+          type: ObjectId[]
+        tasks:
+          type: ObjectId[]
 
 paths:
 
   /user/register:
     post:
-      summary: Register a new User
+      summary: Register a new User (UNUSED)
       description: Register a new User in the database
       tags:
         - User Routes
@@ -121,10 +153,31 @@ paths:
                   error:
                     type: string
                   data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                      userObject:
+                        type: object
+        400:
+          description: Incorrect login credentials passed as parameters. OR Email not found in DB. OR Incorrect email+password combination.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
                     type: string
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                      userObject:
+                        type: object
 
 
-  /tasks:
+  /task:
     get:
       tags:
         - GET Routes
@@ -143,7 +196,7 @@ paths:
         # 5XX:
           description: Unexpected server error.
 
-  /tasks/id/{id}:
+  /task/id/{id}:
     get:
       tags:
         - GET Routes
@@ -162,12 +215,12 @@ paths:
         # 5XX:
           description: Unexpected server error.
 
-  /tasks/{name}:
+  /task/public/{userid}:
     get:
       tags:
         - GET Routes
-      summary: Retrieves a Task by Name
-      description: Retrieves a Task as a JSON object.
+      summary: Retrieves all Tasks for the current user attached to any Projects.
+      description: Retrieves Tasks as a JSON object.
       responses:
         200:
           description: A Task JSON object.
@@ -181,7 +234,26 @@ paths:
         # 5XX:
           description: Unexpected server error.
 
-  /tasks/visibility/{state_visibility}:
+  /task/personal/{userid}:
+    get:
+      tags:
+        - GET Routes
+      summary: Retrieves all personal Tasks for the current user, not attached to any Projects.
+      description: Retrieves Tasks as a JSON object.
+      responses:
+        200:
+          description: A Task JSON object.
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Task"  # the ref is to the "components" object defined within THIS file
+        500:
+        # 5XX:
+          description: Unexpected server error.
+
+  /task/visibility/{state_visibility}:
     get:
       tags:
         - GET Routes
@@ -202,32 +274,10 @@ paths:
         500:
         # 5XX:
           description: Unexpected server error.
-
-  /tasks/completion/{state_completion}:
-    get:
-      tags:
-        - GET Routes
-        # de facto:
-        # parameters:
-        #   - in: <etc.> (see below)
-      summary: Retrieves a list of Tasks by their Completion
-      description: Retrieves a list of tasks as JSON objects.
-      responses:
-        200:
-          description: A list of task JSON objects in an array.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Task"  # the ref is to the "components" object defined within THIS file
-        500:
-        # 5XX:
-          description: Unexpected server error.
     
-  /tasks/create:
+  /task/create:
     post:
-      summary: Create a new Task
+      summary: Create a new Task with possible Project and assignee User and make the references
       description: Create a new Task
       security:
         - ApiKeyAuth: []      
@@ -254,9 +304,9 @@ paths:
           description: "Unauthorized user tried to create a Task with an invalid token.
             (Try again - either wrongly copypasted from the response, or a bad malicious attempt.)"
   
-  /tasks/edit/{id}:
+  /task/edit/{id}:
     patch:
-      summary: Updates the Name and Description of a specific Task
+      summary: Updates Name, Description, and/or Time Tracked of a specific Task
       description: Updates a specific Task based on its id
       security:
         - ApiKeyAuth: [] 
@@ -284,26 +334,82 @@ paths:
               schema:
                 $ref: "#/components/schemas/Task"
 
-  /tasks/delete/{id}:
-    delete:
-      summary: Deletes a specific Task
-      description: Deletes a specific Task based on its id
-      security:
-        - ApiKeyAuth: []   
-      tags:
-        - CRUD Routes         
-      parameters:
-        - in: path
-          name: id
-          required: true
-          description: MongoDB id
-          schema:
-            type: string      
-
+  /project/all:
+    get:
+      summary: Retrieves a list of all projects.
+      description: Retrieves a list of all projects in the database (intended to be by company, but in this app there is only one company).
       responses:
-        201:
-          description: Task deleted succesfully
+        200:
+          description: A list of project JSON objects.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Task"
+                type: object
+                items:
+                  $ref: "#/components/schemas/Project"
+        500:
+        # 5XX:
+          description: Unexpected server error.
+
+  /project/{id}:
+    get:
+      summary: Retrieves one project by ID.
+      description: Retrieves one project by project ID, tailored without internal information.
+      responses:
+        200:
+          description: The returned project document.
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Project"
+        500:
+        # 5XX:
+          description: Unexpected server error.
+
+  /project/tasks/{id}:
+    get:
+      summary: Retrieves one project by ID with readable tasks.
+      description: Retrieves one project by project ID, with its tasks in unfolded document form (instead of ID ref) via populate().
+      responses:
+        200:
+          description: The returned project document with readable tasks.
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Project"
+        500:
+        # 5XX:
+          description: Unexpected server error.
+
+  /project/create:
+    post:
+      summary: Create a new Project with default assignee User and make the references
+      description: Create a new Project
+      security:
+        - ApiKeyAuth: []      
+      tags:
+        - CRUD Routes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Project"
+
+      responses:
+        201:
+          description: Project created succesfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        401:
+          description: "Unauthorized user tried to create a Project without passing a token.
+            (Pass a response JWT token with this request.)"
+        400:
+          description: "Unauthorized user tried to create a Project with an invalid token.
+            (Try again - either wrongly copypasted from the response, or a bad malicious attempt.)"
