@@ -29,7 +29,7 @@ app.use(express.json()); //app.use(bodyParser.json());
 
 // Handle CORS + middleware (copied from KW, except CORS allowed origins)
 app.use(function(request, response, nextFunc) {
-    response.header("Access-Control-Allow-Origin", /*"*"*/ "http://localhost:5173"/*TODO: also add remote deployment URL (or only for the assignment enable wildcard to the left)*/);
+    response.header("Access-Control-Allow-Origin", /*"*"*/ "https://pwa-todoapp-frontend.onrender.com");
     response.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,PATCH,DELETE"); // If using .fetch and not axios
     response.header("Access-Control-Allow-Headers", "auth-token, Origin, X-Requested-With, Content-Type, Accept");
     nextFunc();
